@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>個人簡介 | Your Name</title>
+  <style>
+    /* CSS Reset 與變數設定 */
+    :root {
+      /* 淺色主題 (預設) */
+      --primary-color: #1e1b4b;      /* 主色調：深靛藍 */
+      --accent-color: #6366f1;       /* 點綴色：亮靛藍 */
+      --accent-hover: #4f46e5;
+      --bg-main: #f8fafc;            /* 主要背景 */
+      --bg-section: #f1f5f9;         /* 次要區塊背景 */
+      --card-bg: #ffffff;            /* 卡片背景 */
+      --card-border: #e2e8f0;
+      --text-main: #0f172a;          /* 主要文字 */
+      --text-muted: #475569;         /* 次要文字 */
+      --hero-bg: #1e1b4b;            /* Hero 區塊背景 */
+      --hero-text: #ffffff;
+      --hero-subtext: #e0e7ff;
+      --max-width: 1024px;
+    }
+
+    /* 深色主題變數 */
+    [data-theme="dark"] {
+      --bg-main: #0f172a;
+      --bg-section: #1e293b;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --hero-bg: #0b0f19;
+      --hero-text: #ffffff;
+      --hero-subtext: #a5b4fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--text-main);
+      background-color: var(--bg-main);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* 主題切換按鈕 (固定右上角，動態高對比) */
+    .theme-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 100;
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-color);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+
+    /* 容器 */
+    .container {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    section {
+      padding: 4rem 0;
+      transition: background-color 0.3s ease;
+    }
+
+    .section-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      color: var(--text-main);
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 3rem;
+      height: 4px;
+      background-color: var(--accent-color);
+      margin: 0.5rem auto 0;
+      border-radius: 2px;
+    }
+
+    /* Hero Section */
+    .hero {
+      background-color: var(--hero-bg);
+      color: var(--hero-text);
+      text-align: center;
+      padding: 7rem 1.5rem 5rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 1rem;
+    }
+
+    /* 打字機效果容器與閃爍游標 */
+    .hero p.motto {
+      font-size: 1.25rem;
+      color: var(--hero-subtext);
+      max-width: 600px;
+      margin: 0 auto;
+      font-weight: 300;
+      min-height: 2em;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.2em;
+      background-color: var(--accent-color);
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 0.8s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* 關於我 (加入吉祥物圖樣排版) */
+    .about-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .about-avatar {
+      width: 160px;
+      height: 160px;
+      max-width: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid var(--accent-color);
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .about-avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .about-text {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    /* 專長卡片 Grid */
+    .skills-section {
+      background-color: var(--bg-section);
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .skill-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .skill-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      border-color: var(--accent-color);
+    }
+
+    .skill-card h3 {
+      font-size: 1.25rem;
+      color: var(--text-main);
+      margin-bottom: 0.75rem;
+    }
+
+    .skill-card p {
+      color: var(--text-muted);
+      font-size: 0.975rem;
+    }
+
+    /* 聯絡方式與頁尾 */
+    .contact-section {
+      background-color: var(--bg-main);
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+    }
+
+    .contact-btn {
+      display: inline-block;
+      background-color: var(--accent-color);
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.875rem 2rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      margin-top: 1rem;
+    }
+
+    .contact-btn:hover, .contact-btn:focus {
+      background-color: var(--accent-hover);
+      transform: translateY(-2px);
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.875rem;
+      background-color: var(--hero-bg);
+      color: var(--hero-subtext);
+      transition: background-color 0.3s ease;
+    }
+
+    /* RWD 斷點 */
+    @media (min-width: 768px) {
+      .hero h1 {
+        font-size: 3.5rem;
+      }
+
+      .about-container {
+        flex-direction: row;
+        text-align: left;
+      }
+
+      .skills-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeToggle" aria-label="切換主題模式">
+    <span id="themeIcon">🌙</span>
+    <span id="themeText">深色模式</span>
+  </button>
+
+  <header class="hero">
+    <div class="container">
+      <h1>你的名字</h1>
+      <p class="motto"><span id="typedText"></span><span class="cursor"></span></p>
+    </div>
+  </header>
+
+  <main>
+    <section id="about" class="container">
+      <h2 class="section-title">關於我</h2>
+      <div class="about-container">
+        <img src="images/hippo.png" alt="吉祥物頭像" class="about-avatar">
+        <div class="about-text">
+          <p>
+            你好！我是一名專注於 Web 前端開發與使用者體驗設計的工程師。熱衷於將複雜的需求轉化為乾淨、易用且順暢的網頁介面。平時喜歡關注前端新技術、介面設計趨勢，並持續透過專案實作提升自己的能力。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" class="skills-section">
+      <div class="container">
+        <h2 class="section-title">我的專長</h2>
+        <div class="skills-grid">
+          
+          <div class="skill-card">
+            <h3>前端網頁開發</h3>
+            <p>精通 HTML5、CSS3 與 JavaScript 語法，能快速建構結構清晰、語意化且易於維護的網頁架構。</p>
+          </div>
+
+          <div class="skill-card">
+            <h3>響應式設計 (RWD)</h3>
+            <p>靈活運用 Flexbox 與 CSS Grid，確保網站從行動裝置到桌上型螢幕都能呈現最佳排版與視覺體驗。</p>
+          </div>
+
+          <div class="skill-card">
+            <h3>UI / UX 觀念與實踐</h3>
+            <p>注重色彩對比度、字體排版與元件互動細節，致力於提供符合無障礙標準且直覺的操作體驗。</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+      <div class="container">
+        <h2 class="section-title">聯絡方式</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">
+          無論是合作機會、技術交流，或只是想打個招呼，都非常歡迎隨時與我聯繫！
+        </p>
+        <a href="mailto:your.email@example.com" class="contact-btn">傳送 Email 給我</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 Your Name. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // 1. 打字機效果實作
+    const mottoText = "「用程式與設計，打造直覺且優雅的數位體驗。」";
+    const typedTextElement = document.getElementById("typedText");
+    let textIndex = 0;
+    const typingSpeed = 100;
+
+    function typeWriter() {
+      if (textIndex < mottoText.length) {
+        typedTextElement.textContent += mottoText.charAt(textIndex);
+        textIndex++;
+        setTimeout(typeWriter, typingSpeed);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      setTimeout(typeWriter, 400);
+    });
+
+    // 2. 深色/淺色模式切換邏輯
+    const themeToggleBtn = document.getElementById("themeToggle");
+    const themeIcon = document.getElementById("themeIcon");
+    const themeText = document.getElementById("themeText");
+    const htmlElement = document.documentElement;
+
+    const savedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (systemPrefersDark) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+
+    function setTheme(theme) {
+      htmlElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+
+      if (theme === "dark") {
+        themeIcon.textContent = "☀️";
+        themeText.textContent = "淺色模式";
+      } else {
+        themeIcon.textContent = "🌙";
+        themeText.textContent = "深色模式";
+      }
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const currentTheme = htmlElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+  </script>
+</body>
+</html>

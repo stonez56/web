@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動物透明圖庫預覽 - Animal Gallery Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --badge-bg: linear-gradient(135deg, #6366f1, #a855f7);
+            --checker-light: #e2e8f0;
+            --checker-dark: #cbd5e1;
+        }
+
+        [data-bg-theme="dark-checker"] {
+            --preview-bg-1: #1e293b;
+            --preview-bg-2: #0f172a;
+        }
+
+        [data-bg-theme="light-checker"] {
+            --preview-bg-1: #ffffff;
+            --preview-bg-2: #cbd5e1;
+        }
+
+        [data-bg-theme="pure-dark"] {
+            --preview-bg-1: #090d16;
+            --preview-bg-2: #090d16;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        header {
+            max-width: 1400px;
+            margin: 0 auto 2.5rem;
+            text-align: center;
+        }
+
+        .title-container {
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Controls bar */
+        .controls-bar {
+            max-width: 1400px;
+            margin: 0 auto 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(12px);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .theme-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .theme-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn:hover, .theme-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        /* Grid Layout */
+        .gallery-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Photo Card */
+        .photo-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        /* Image Wrapper with Checkerboard Background for Transparency */
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            background-color: var(--preview-bg-1);
+            background-image: 
+                linear-gradient(45deg, var(--preview-bg-2) 25%, transparent 25%), 
+                linear-gradient(-45deg, var(--preview-bg-2) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, var(--preview-bg-2) 75%), 
+                linear-gradient(-45deg, transparent 75%, var(--preview-bg-2) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .photo-card:hover .image-wrapper img {
+            transform: scale(1.08);
+        }
+
+        /* Number Badge */
+        .number-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--badge-bg);
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        /* Card Meta Details */
+        .card-info {
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-top: 1px solid var(--card-border);
+            flex-grow: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            word-break: break-all;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .file-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .file-size {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .download-link {
+            color: #818cf8;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .download-link:hover {
+            color: #c084fc;
+            text-decoration: underline;
+        }
+
+        /* Modal Lightbox */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            max-width: 90vw;
+            max-height: 90vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-img-container {
+            width: 100%;
+            max-height: 65vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--preview-bg-1);
+            background-image: 
+                linear-gradient(45deg, var(--preview-bg-2) 25%, transparent 25%), 
+                linear-gradient(-45deg, var(--preview-bg-2) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, var(--preview-bg-2) 75%), 
+                linear-gradient(-45deg, transparent 75%, var(--preview-bg-2) 75%);
+            background-size: 24px 24px;
+            background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .modal-img-container img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+
+        .modal-info {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        footer {
+            max-width: 1400px;
+            margin: 3rem auto 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1.5rem;
+        }
+    </style>
+</head>
+<body data-bg-theme="dark-checker">
+
+    <header>
+        <div class="title-container">
+            <h1>🐾 動物去背透明圖片庫</h1>
+            <p class="subtitle">專為課堂教材與簡報設計 • 共 20 張高畫質去背圖檔</p>
+        </div>
+    </header>
+
+    <div class="controls-bar">
+        <div class="search-box">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" placeholder="搜尋動物名稱或檔名 (例如: cat, tiger, 鹿)...">
+        </div>
+
+        <div class="theme-selector">
+            <span>底色切換：</span>
+            <button class="theme-btn active" data-theme="dark-checker">深色網格</button>
+            <button class="theme-btn" data-theme="light-checker">淺色網格</button>
+            <button class="theme-btn" data-theme="pure-dark">純暗色</button>
+        </div>
+    </div>
+
+    <main class="gallery-grid" id="galleryGrid">
+        <!-- 圖片卡片將由 JS 動態渲染生成 -->
+    </main>
+
+    <!-- 放大檢視 Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <div class="modal-img-container">
+                <img id="modalImg" src="" alt="Full Preview">
+            </div>
+            <div class="modal-info">
+                <div>
+                    <h3 id="modalTitle" style="color: var(--text-primary); font-size: 1.2rem;"></h3>
+                    <p id="modalSize" style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;"></p>
+                </div>
+                <a id="modalDownload" href="" download class="theme-btn" style="background: var(--accent-color); text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;">
+                    📥 下載圖片
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>✨ 點擊任意圖片卡片可開啟全螢幕檢視與高清下載</p>
+    </footer>
+
+    <script>
+        // 20 張圖片資料清單
+        const animalData = [
+            { no: 1, name: "bear_wildlife.png", label: "野生熊 (Bear)", size: "469 KB" },
+            { no: 2, name: "beetle_insect.png", label: "甲蟲/昆蟲 (Beetle)", size: "498 KB" },
+            { no: 3, name: "bird_sparrow.png", label: "麻雀/鳥類 (Sparrow)", size: "175 KB" },
+            { no: 4, name: "cat_dog_silhouette.png", label: "貓狗剪影 (Cat & Dog Silhouette)", size: "241 KB" },
+            { no: 5, name: "cat_drummer.png", label: "打鼓貓咪 (Cat Drummer)", size: "1.18 MB" },
+            { no: 6, name: "chicken_hen_family.png", label: "母雞家庭 (Hen Family)", size: "243 KB" },
+            { no: 7, name: "deer_antler.png", label: "鹿角公鹿 (Deer Antler)", size: "929 KB" },
+            { no: 8, name: "dog_headphone.png", label: "耳機狗狗 (Dog with Headphones)", size: "138 KB" },
+            { no: 9, name: "dogs_heads_fun.png", label: "趣味狗頭 (Fun Dog Heads)", size: "187 KB" },
+            { no: 10, name: "giraffe_tall.png", label: "長頸鹿 (Giraffe)", size: "364 KB" },
+            { no: 11, name: "hippo.png", label: "河馬 (Hippo)", size: "420 KB" },
+            { no: 12, name: "hornet_wasp.png", label: "大黃蜂/胡蜂 (Hornet)", size: "502 KB" },
+            { no: 13, name: "jaguar_jungle.png", label: "叢林美洲豹 (Jaguar)", size: "693 KB" },
+            { no: 14, name: "lion_nature.png", label: "公獅 (Lion)", size: "389 KB" },
+            { no: 15, name: "penguin_cute.png", label: "可愛企鵝 (Penguin)", size: "261 KB" },
+            { no: 16, name: "pomeranian_dog.png", label: "博美狗 (Pomeranian Dog)", size: "1.31 MB" },
+            { no: 17, name: "rooster_chicken.png", label: "公雞 (Rooster)", size: "649 KB" },
+            { no: 18, name: "scorpion_arachnid.png", label: "蠍子 (Scorpion)", size: "616 KB" },
+            { no: 19, name: "squirrel_cute.png", label: "可愛松鼠 (Squirrel)", size: "356 KB" },
+            { no: 20, name: "tiger_angry_roar.png", label: "咆哮老虎 (Angry Tiger)", size: "258 KB" }
+        ];
+
+        const galleryGrid = document.getElementById('galleryGrid');
+        const searchInput = document.getElementById('searchInput');
+
+        // 渲染圖庫卡片
+        function renderGallery(items) {
+            galleryGrid.innerHTML = '';
+            if (items.length === 0) {
+                galleryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 3rem;">未找到符合的動物圖片</div>';
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+
+                const imagePath = `./animals/${item.name}`;
+
+                card.innerHTML = `
+                    <div class="number-badge">#${item.no}</div>
+                    <div class="image-wrapper" onclick="openModal('${imagePath}', '${item.name}', '${item.label}', '${item.size}', #${item.no})">
+                        <img src="${imagePath}" alt="${item.label}" loading="lazy">
+                    </div>
+                    <div class="card-info">
+                        <div class="file-name" title="${item.name}">${item.name}</div>
+                        <div class="file-meta">
+                            <span class="file-size">${item.size}</span>
+                            <a href="${imagePath}" download="${item.name}" class="download-link" title="直接下載">
+                                下載 📥
+                            </a>
+                        </div>
+                    </div>
+                `;
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        // 搜尋過濾功能
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            const filtered = animalData.filter(item => 
+                item.name.toLowerCase().includes(term) || 
+                item.label.toLowerCase().includes(term) ||
+                `#${item.no}`.includes(term) ||
+                `${item.no}` === term
+            );
+            renderGallery(filtered);
+        });
+
+        // 底色切換功能
+        const themeBtns = document.querySelectorAll('.theme-btn[data-theme]');
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                themeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const theme = btn.getAttribute('data-theme');
+                document.body.setAttribute('data-bg-theme', theme);
+            });
+        });
+
+        // Modal 功能
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSize = document.getElementById('modalSize');
+        const modalDownload = document.getElementById('modalDownload');
+        const modalClose = document.getElementById('modalClose');
+
+        function openModal(path, fileName, label, size, noStr) {
+            modalImg.src = path;
+            modalTitle.innerText = `${noStr} ${label} (${fileName})`;
+            modalSize.innerText = `檔案大小：${size}`;
+            modalDownload.href = path;
+            modalDownload.download = fileName;
+            modal.classList.add('active');
+        }
+
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        // 初始化
+        renderGallery(animalData);
+    </script>
+</body>
+</html>
